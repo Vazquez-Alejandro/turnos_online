@@ -26,7 +26,13 @@
 ### Importante
 - [ ] **Dominio Resend** — Verificar `agenpro.app` en Resend para emails
 - [ ] **Rate limiting** — Usa Map en memoria (resetea en cold start). Considerar Upstash Redis
-- [ ] **cancel-appointment es GET** — Debería ser POST (diseño, no bug crítico)
+
+## Aplicado (2026-08-09)
+- [x] **Validación server-side** — Creado `src/lib/booking-validation.ts` con `validateBookingSlot()` (formato, fecha pasada, tenant, servicio, fechas bloqueadas, disponibilidad, solapamiento). Integrado en `/api/public-appointments` y `/api/appointments`.
+- [x] **cancel GET→POST** — `/api/cancel-appointment` ahora POST con admin client; creado `/api/appointment-summary` (GET por token, TTL 48h) y página pública `/cancelar`; link WhatsApp actualizado. Admin client en `/api/confirm-appointment`. Traducciones `cancelPage` es/en.
+- [x] **`src/lib/supabase/admin.ts`** — `createAdminClient()` con service role.
+- [x] **Schema consolidado** — `supabase/schema.sql` es la fuente única de verdad (9 tablas + seed), alineado con el código (plan_definitions con `key`/`price_monthly_cents`/`appointments_limit`/`staff_limit`, tenants con `filter_by_service`/`deposit_percent`/`default_cleaning_time`/`custom_fields`/`features`, índice único parcial anti doble-reserva). Eliminados los archivos divergentes `supabase-schema.sql` y `supabase/schema_production.sql`. `supabase/seed.sql` alineado. Migración `20250101000012_align_plans_and_slot_unique.sql` reconcilia plan_definitions de DBs existentes y agrega el índice único. `PlanDefinition` en types actualizado.
+- [ ] **Lint limpio** — Pendiente de corregir (~30 errors/warnings: react-hooks immutability/set-state-in-effect, no-explicit-any, prefer-const, purity, unused).
 
 ### Marketing
 - [ ] Crear post de lanzamiento para redes sociales

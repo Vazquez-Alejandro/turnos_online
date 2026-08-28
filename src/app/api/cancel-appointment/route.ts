@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWhatsApp } from "@/lib/whatsapp";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const token = searchParams.get("token");
+export async function POST(req: Request) {
+  const { token } = await req.json().catch(() => ({ token: null }));
 
   if (!token) {
     return NextResponse.json({ error: "Token requerido" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: appointment } = await supabase
     .from("appointments")

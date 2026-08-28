@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendWhatsApp } from "@/lib/whatsapp";
+import { validateBookingSlot } from "@/lib/booking-validation";
 import crypto from "crypto";
 
 function formatDate(dateStr: string) {
@@ -92,12 +94,34 @@ export async function POST(request: Request) {
 
   const { data: tenant } = await supabase
     .from("tenants")
-    .select("appointments_limit, features, deposit_percent, default_cleaning_time")
+    .select("appointments_limit, features, deposit_percent, default_cleaning_time, filter_by_service")
     .eq("id", tenant_id)
     .single();
 
   if (!tenant) {
     return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
+  }
+
+  // --- Server-side slot validation (availability, blocked dates, past, overlap) ---
+  const validation = await validateBookingSlot(supabase, {
+    tenantId: tenant_id,
+    serviceId: service_id || null,
+    date,
+    time,
+  });
+
+  if (!validation.ok) {
+    return NextResponse.json({ error: validation.error }, { status: validation.status || 400 });
+  }
+
+  const { data: service } = await supabase
+    .from("services")
+    .select("name")
+    .eq("id", service_id)
+    .single();
+
+  if (service_id && !service) {
+    return NextResponse.json({ error: "Servicio no encontrado" }, { status: 404 });
   }
 
   const features = { ...tenant.features } as Record<string, boolean>;
@@ -135,16 +159,6 @@ export async function POST(request: Request) {
       { error: "El negocio alcanzó su límite mensual de turnos." },
       { status: 403 }
     );
-  }
-
-  const { data: service } = await supabase
-    .from("services")
-    .select("name, tenant_id")
-    .eq("id", service_id)
-    .single();
-
-  if (service && service.tenant_id !== tenant_id) {
-    return NextResponse.json({ error: "Servicio no pertenece a este negocio" }, { status: 400 });
   }
 
   // --- Verify payment actually succeeded ---
@@ -187,7 +201,9 @@ export async function POST(request: Request) {
     confirmation_token: confirmationToken,
   };
 
-  const { error } = await supabase.from("appointments").insert(appointment);
+  // Insert via service role: la policy RLS de INSERT anónimo está cerrada,
+  // y este endpoint ya validó (slot, rate limit, pago, blacklist, límite).
+  const { error } = await createAdminClient().from("appointments").insert(appointment);
 
   if (error) {
     return NextResponse.json(
@@ -208,7 +224,7 @@ export async function POST(request: Request) {
 
     if (confirmationToken) {
       const confirmUrl = `${process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"}/api/confirm-appointment?token=${confirmationToken}`;
-      const cancelUrl = `${process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"}/api/cancel-appointment?token=${confirmationToken}`;
+      const cancelUrl = `${process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"}/cancelar?token=${confirmationToken}`;
       msg += `\n\n👉 *Confirmá tu turno:* ${confirmUrl}\n❌ *Cancelar:* ${cancelUrl}`;
     } else {
       msg += `\n\nTe esperamos!`;

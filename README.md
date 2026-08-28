@@ -128,12 +128,16 @@ Sistema de reserva de turnos online para negocios. Multi-tenant, con pagos integ
 | POST | `/api/create-payment-intent` | Crear Stripe PaymentIntent |
 | POST | `/api/stripe-webhook` | Webhook Stripe |
 | POST | `/api/mercadopago-preference` | Crear preferencia MercadoPago |
-| GET | `/api/confirm-appointment` | Confirmar turno vía token |
-| GET | `/api/cancel-appointment` | Cancelar turno vía token |
+| GET | `/api/appointment-summary` | Resumen del turno vía token (página pública/cancelar) |
+| POST | `/api/confirm-appointment` | Confirmar turno vía token |
+| POST | `/api/cancel-appointment` | Cancelar turno vía token (token en body) |
 | POST | `/api/change-plan` | Cambiar plan de suscripción |
 | POST | `/api/waitlist` | Agregar a waitlist |
 
-## Base de Datos (8 tablas + 1 seed)
+## Base de Datos (9 tablas + seed)
+
+> **Fuente de verdad:** `supabase/schema.sql` (esquema canónico) + `supabase/seed.sql`.
+> Para bases existentes se aplican las migraciones en `supabase/migrations/` en orden.
 
 | Tabla | Propósito |
 |-------|-----------|
@@ -143,7 +147,7 @@ Sistema de reserva de turnos online para negocios. Multi-tenant, con pagos integ
 | `availability` | Horario semanal por tenant+service — día, habilitado, hora inicio/fin, duración slot |
 | `blocked_dates` | Fechas no disponibles — fecha, razón |
 | `appointments` | Reservas — fecha, hora, estado, pago, info cliente, servicio, notas, recurrente, token confirmación |
-| `plan_definitions` | Configuración de planes — nombre, max_turnos, max_staff, precio, descripción |
+| `plan_definitions` | Configuración de planes — key, nombre, precio cents, límite turnos, límite staff, features |
 | `client_blacklist` | Clientes bloqueados por teléfono/email por tenant |
 | `waitlist` | Lista de espera para slots no disponibles |
 

@@ -469,7 +469,7 @@ export default function SettingsContent() {
                     <span className="text-xs text-white/40 font-normal">/mes</span>
                   )}
                 </p>
-                <p className="mt-3 text-xs text-white/50 flex-1">{plan.description}</p>
+                <p className="mt-3 text-xs text-white/50 flex-1">{plan.features.join(" · ")}</p>
                 {isCurrent ? (
                   <p className="text-xs text-amber-400 mt-3 font-medium flex items-center gap-1">
                     <Check className="w-3 h-3" /> Plan actual

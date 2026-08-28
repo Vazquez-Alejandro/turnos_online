@@ -283,6 +283,18 @@ export const es = {
     error: "Error",
     success: "Éxito",
   },
+  cancelPage: {
+    title: "Cancelar Turno",
+    details: "Estás por cancelar tu turno del",
+    at: "a las",
+    confirm: "Confirmar cancelación",
+    back: "Mantener mi turno",
+    success: "Tu turno fue cancelado.",
+    error: "No se pudo cancelar el turno.",
+    expired: "El enlace expiró. Solicitá uno nuevo.",
+    notFound: "Turno no encontrado.",
+    goHome: "Volver al inicio",
+  },
 };
 
 export type Translations = typeof es;

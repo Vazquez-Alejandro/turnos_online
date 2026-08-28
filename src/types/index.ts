@@ -116,11 +116,12 @@ export interface WaitlistEntry {
 }
 
 export interface PlanDefinition {
+  key: string;
   name: string;
-  max_turnos: number;
-  max_staff: number;
   price_monthly_cents: number;
-  description: string;
+  appointments_limit: number;
+  staff_limit: number;
+  features: string[];
 }
 
 export const PLAN_LIMITS: Record<string, { appointments: number; staff: number }> = {

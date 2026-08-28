@@ -285,4 +285,16 @@ export const en: Translations = {
     error: "Error",
     success: "Success",
   },
+  cancelPage: {
+    title: "Cancel Appointment",
+    details: "You are about to cancel your appointment on",
+    at: "at",
+    confirm: "Confirm cancellation",
+    back: "Keep my appointment",
+    success: "Your appointment was cancelled.",
+    error: "Your appointment could not be cancelled.",
+    expired: "This link has expired. Request a new one.",
+    notFound: "Appointment not found.",
+    goHome: "Back to home",
+  },
 };
